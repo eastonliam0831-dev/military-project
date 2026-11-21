@@ -5,6 +5,7 @@ import com.militaryclient.config.Features;
 import com.militaryclient.config.Waypoint;
 import com.militaryclient.fx.Atmosphere;
 import com.militaryclient.util.Colors;
+import com.militaryclient.util.Compat;
 import com.militaryclient.util.Dim;
 import com.militaryclient.util.Gfx;
 import com.militaryclient.util.Proj;
@@ -86,7 +87,7 @@ public final class HudLayer {
 
     public static void render(GuiGraphicsExtractor graphics, DeltaTracker dt) {
         mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null || mc.options.hideGui) return;
+        if (mc.player == null || mc.level == null || Compat.hideGui()) return;
         g = graphics; p = mc.player; level = mc.level;
         pt = dt.getGameTimeDeltaPartialTick(false);
         Gfx.refreshFromConfig();
@@ -407,7 +408,7 @@ public final class HudLayer {
         if (Config.b("tactical_hud", "direction")) { float b = Proj.bearing(); ls.add("HDG " + bearing3(b) + "^ " + Proj.cardinal(b)); }
         if (Config.b("tactical_hud", "fps")) ls.add("FPS " + mc.getFps());
         if (Config.b("tactical_hud", "time")) {
-            long t = (level.getDayTime() % 24000 + 24000) % 24000;
+            long t = (Compat.dayTime(level) % 24000 + 24000) % 24000;
             int hr = (int) ((t / 1000 + 6) % 24), mn = (int) ((t % 1000) * 60 / 1000);
             ls.add(String.format("TIME %02d:%02d", hr, mn));
         }

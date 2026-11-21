@@ -2,6 +2,7 @@ package com.militaryclient.util;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.gui.screens.Screen;
 import org.slf4j.Logger;
 
@@ -98,5 +99,65 @@ public final class Compat {
             }
         } catch (Throwable ignored) { }
         return 1f;
+    }
+
+    // ------------------------------------------------------------------ names that moved in 26.x
+
+    private static Field hideField;
+    private static Object hideOwner;
+    private static Method hideMethod;
+    private static boolean hideResolved;
+
+    /** True when the player pressed F1 (hide GUI). Looks the flag up by name on Options, Minecraft and Gui. */
+    public static boolean hideGui() {
+        Minecraft mc = Minecraft.getInstance();
+        try {
+            if (!hideResolved) {
+                hideResolved = true;
+                Object gui = null;
+                Field gf = findField(mc.getClass(), "gui");
+                if (gf != null) gui = gf.get(mc);
+                Object[] owners = { mc.options, mc, gui };
+                for (Object o : owners) {
+                    if (o == null) continue;
+                    Field f = findField(o.getClass(), "hideGui");
+                    if (f != null && f.getType() == boolean.class) { hideField = f; hideOwner = o; return f.getBoolean(o); }
+                    for (String m : new String[] { "hideGui", "isHideGui", "isGuiHidden" }) {
+                        Method me = findMethod(o.getClass(), m);
+                        if (me != null && me.getReturnType() == boolean.class) { hideMethod = me; hideOwner = o; return (boolean) me.invoke(o); }
+                    }
+                }
+                LOG.warn("[MilitaryClient] Could not find the hide-GUI flag; HUD stays visible with F1");
+            }
+            if (hideField != null) return hideField.getBoolean(hideOwner);
+            if (hideMethod != null) return (boolean) hideMethod.invoke(hideOwner);
+        } catch (Throwable ignored) { }
+        return false;
+    }
+
+    private static Method dayMethod;
+    private static boolean dayResolved;
+
+    /** World time of day in ticks. Falls back to game time if the day-time accessor was renamed. */
+    public static long dayTime(ClientLevel level) {
+        try {
+            if (!dayResolved) {
+                dayResolved = true;
+                for (String n : new String[] { "getDayTime", "getDefaultClockTime", "getOverworldClockTime", "dayTime", "getClockTime" }) {
+                    Method m = findMethod(level.getClass(), n);
+                    if (m != null && Number.class.isAssignableFrom(boxed(m.getReturnType()))) { dayMethod = m; break; }
+                }
+            }
+            if (dayMethod != null) return ((Number) dayMethod.invoke(level)).longValue();
+        } catch (Throwable ignored) { }
+        return level.getGameTime();
+    }
+
+    private static Class<?> boxed(Class<?> c) {
+        if (c == long.class) return Long.class;
+        if (c == int.class) return Integer.class;
+        if (c == double.class) return Double.class;
+        if (c == float.class) return Float.class;
+        return c;
     }
 }
