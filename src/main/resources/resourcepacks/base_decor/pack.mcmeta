@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "Military Client: base decoration blocks (camo wool, hazard concrete, steel plate, runway)",
+    "min_format": 80,
+    "max_format": 999
+  }
+}
