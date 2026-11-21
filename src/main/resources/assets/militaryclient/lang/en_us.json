@@ -1,0 +1,9 @@
+{
+  "key.category.militaryclient.main": "MILITARY CLIENT",
+  "key.militaryclient.open_panel": "Open Military Control Panel",
+  "key.militaryclient.binoculars": "Binoculars / Zoom View",
+  "key.militaryclient.aircraft_camera": "Aircraft Viewing Camera",
+  "key.militaryclient.add_waypoint": "Add Waypoint Here",
+  "key.militaryclient.radio_next": "Radio: Next Channel",
+  "key.militaryclient.radio_prev": "Radio: Previous Channel"
+}

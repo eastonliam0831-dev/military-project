@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "militaryclient",
+  "version": "${version}",
+  "name": "Military Client",
+  "description": "Client-side military command suite: tactical HUD, GPS, radar, night vision, thermal, ambience, aircraft tracking and a centralized control panel. No server mod required.",
+  "authors": ["Military Client"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.militaryclient.MilitaryClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
