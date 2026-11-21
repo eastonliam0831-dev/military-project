@@ -53,11 +53,11 @@ public final class MilitaryClient implements ClientModInitializer {
         // ---- key mappings (normal Minecraft system: they show up in Options > Controls with conflict warnings)
         CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(ID, "main"));
         OPEN = key("open_panel", InputConstants.KEY_RSHIFT);       // default Right Shift
-        BINOCULARS = key("binoculars", -1);                         // extras default unbound: no clashes with other mods
-        CAMERA = key("aircraft_camera", -1);
-        ADD_WAYPOINT = key("add_waypoint", -1);
-        RADIO_NEXT = key("radio_next", -1);
-        RADIO_PREV = key("radio_prev", -1);
+        BINOCULARS = key("binoculars", 302);   // F13: valid key code that most keyboards lack, so effectively unbound
+        CAMERA = key("aircraft_camera", 303);      // F14
+        ADD_WAYPOINT = key("add_waypoint", 304);   // F15
+        RADIO_NEXT = key("radio_next", 305);       // F16
+        RADIO_PREV = key("radio_prev", 306);       // F17
         ALL_KEYS = List.of(OPEN, BINOCULARS, CAMERA, ADD_WAYPOINT, RADIO_NEXT, RADIO_PREV);
 
         // ---- HUD
