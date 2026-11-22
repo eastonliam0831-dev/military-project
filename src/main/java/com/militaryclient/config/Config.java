@@ -205,6 +205,11 @@ public final class Config {
         changed(k);
     }
 
+    /** True when the user has never changed a setting (fresh or default-only config file). */
+    public static boolean isPristine() {
+        return data.enabled.isEmpty() && data.values.isEmpty() && data.texts.isEmpty();
+    }
+
     public static String preset() { return data.preset; }
     public static void setPresetName(String n) { data.preset = n; dirty = true; dirtyAt = System.currentTimeMillis(); }
     public static List<Waypoint> waypoints() { return data.waypoints; }

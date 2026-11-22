@@ -160,4 +160,29 @@ public final class Compat {
         if (c == float.class) return Float.class;
         return c;
     }
+
+    private static Object mouseHandler;
+    private static Method leftMethod;
+    private static Field leftField;
+    private static boolean mouseResolved;
+
+    /** Whether the left mouse button is currently down (looked up by name; false if unavailable). */
+    public static boolean leftMouseDown() {
+        try {
+            if (!mouseResolved) {
+                mouseResolved = true;
+                Minecraft mc = Minecraft.getInstance();
+                Field mf = findField(mc.getClass(), "mouseHandler");
+                if (mf != null) mouseHandler = mf.get(mc);
+                if (mouseHandler != null) {
+                    leftMethod = findMethod(mouseHandler.getClass(), "isLeftPressed");
+                    if (leftMethod == null) leftField = findField(mouseHandler.getClass(), "isLeftPressed");
+                }
+                if (leftMethod == null && leftField == null) LOG.warn("[MilitaryClient] Polled mouse state unavailable; using click events only");
+            }
+            if (leftMethod != null) return (boolean) leftMethod.invoke(mouseHandler);
+            if (leftField != null) return leftField.getBoolean(mouseHandler);
+        } catch (Throwable ignored) { }
+        return false;
+    }
 }

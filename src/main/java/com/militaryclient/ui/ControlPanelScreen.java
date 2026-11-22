@@ -125,25 +125,37 @@ public final class ControlPanelScreen extends Screen {
         }
     }
 
-    @Override
-    public boolean mouseClicked(MouseButtonEvent e, boolean dbl) {
-        if (e.button() != 0) return false;
-        double x = e.x() / S, y = e.y() / S;
+    private long handledAt;
+    private boolean polledDown;
+    private double lastVx, lastVy;
+
+    /** Handles a left click at virtual coordinates (the same space the controls are drawn in). */
+    private void press(double x, double y) {
+        handledAt = System.nanoTime();
         for (int i = regions.size() - 1; i >= 0; i--) {
             Region r = regions.get(i);
             if (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h && y >= r.clip1 && y <= r.clip2) {
                 if (r.press != null) r.press.accept(x);
                 if (r.drag != null) dragging = r;
-                return true;
+                return;
             }
         }
         focus = null;
+    }
+
+    // Clicks use the mouse position Minecraft hands to extractRenderState (the one hover uses), not the event's own
+    // x/y, so they cannot land in the wrong coordinate space. A polled fallback covers a missing click event; a
+    // short de-dupe window stops both paths from firing for the same click.
+    @Override
+    public boolean mouseClicked(MouseButtonEvent e, boolean dbl) {
+        if (e.button() != 0) return false;
+        if (System.nanoTime() - handledAt > 150_000_000L) press(lastVx, lastVy);
         return true;
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent e, double dx, double dy) {
-        if (dragging != null && dragging.drag != null) { dragging.drag.accept(e.x() / S); return true; }
+        if (dragging != null && dragging.drag != null) { dragging.drag.accept(lastVx); return true; }
         return false;
     }
 
@@ -166,9 +178,16 @@ public final class ControlPanelScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         Gfx.refreshFromConfig();
-        S = Config.f("global", "ui_scale");
+        // Shrink the panel automatically on high GUI scales so it always fits (needs about 664 x 432 virtual px).
+        S = Math.max(0.4f, Math.min(Config.f("global", "ui_scale"), Math.min(width / 664f, height / 432f)));
+        lastVx = mouseX / S; lastVy = mouseY / S;
+        boolean down = Compat.leftMouseDown();
+        if (down && !polledDown && System.nanoTime() - handledAt > 150_000_000L) press(lastVx, lastVy);
+        if (!down && polledDown) dragging = null;
+        if (down && dragging != null && dragging.drag != null) dragging.drag.accept(lastVx);
+        polledDown = down;
         vw = (int) (width / S); vh = (int) (height / S);
-        mx = (int) (mouseX / S); my = (int) (mouseY / S);
+        mx = (int) lastVx; my = (int) lastVy;
         time = System.nanoTime() / 1e9;
         regions.clear();
         pw = Math.min(vw - 12, 660); ph = Math.min(vh - 12, 420);

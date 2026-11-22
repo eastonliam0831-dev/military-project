@@ -49,6 +49,10 @@ public final class MilitaryClient implements ClientModInitializer {
         Config.init(FabricLoader.getInstance().getConfigDir());
         HudLayer.init();
         PackSync.init();
+        if (Config.isPristine()) { // first launch: show something useful immediately; change it any time in the panel
+            var starter = com.militaryclient.config.Presets.byName("Modern Military");
+            if (starter != null) { starter.apply(); Config.save(); }
+        }
 
         // ---- key mappings (normal Minecraft system: they show up in Options > Controls with conflict warnings)
         CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(ID, "main"));
